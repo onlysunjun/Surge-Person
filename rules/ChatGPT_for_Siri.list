@@ -5,18 +5,18 @@
 # =========================================================
 
 # Apple Intelligence / Siri / Relay / Gateway
-DOMAIN,smoot.apple.com
-DOMAIN,apple-relay.apple.com
-DOMAIN,apple-relay.mask.apple-dns.net
-DOMAIN,gateway.fe2.apple-dns.net
-DOMAIN,gateway.icloud.com
-DOMAIN,gspe1-ssl.ls.apple.com
-DOMAIN,guzzoni.apple.com
-DOMAIN,seed.siri.apple.com
-DOMAIN,seed-siri-apple-com.v.aaplimg.com
-DOMAIN,smoot-searchv2-aapse1c.v.aaplimg.com
+.smoot.apple.com
+.apple-relay.apple.com
+.apple-relay.mask.apple-dns.net
+.gateway.fe2.apple-dns.net
+.gateway.icloud.com
+.gspe1-ssl.ls.apple.com
+.guzzoni.apple.com
+.seed.siri.apple.com
+.seed-siri-apple-com.v.aaplimg.com
+.smoot-searchv2-aapse1c.v.aaplimg.com
 
 # CDN / Cloud Relay
-DOMAIN,cp4.cloudflare.com
-DOMAIN,apple-relay.cloudflare.com
-DOMAIN,apple-relay.fastly-edge.com
+.cp4.cloudflare.com
+.apple-relay.cloudflare.com
+.apple-relay.fastly-edge.com
