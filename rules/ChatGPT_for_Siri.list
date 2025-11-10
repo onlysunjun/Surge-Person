@@ -1,0 +1,22 @@
+# =========================================================
+#  ChatGPT for Siri / Apple Intelligence 解锁分流规则
+#  适用于 Surge / Loon / QuantumultX
+#  🇺🇸 请将此规则指向海外代理（如 US / JP / HK 节点）
+# =========================================================
+
+# Apple Intelligence / Siri / Relay / Gateway
+DOMAIN,smoot.apple.com
+DOMAIN,apple-relay.apple.com
+DOMAIN,apple-relay.mask.apple-dns.net
+DOMAIN,gateway.fe2.apple-dns.net
+DOMAIN,gateway.icloud.com
+DOMAIN,gspe1-ssl.ls.apple.com
+DOMAIN,guzzoni.apple.com
+DOMAIN,seed.siri.apple.com
+DOMAIN,seed-siri-apple-com.v.aaplimg.com
+DOMAIN,smoot-searchv2-aapse1c.v.aaplimg.com
+
+# CDN / Cloud Relay
+DOMAIN,cp4.cloudflare.com
+DOMAIN,apple-relay.cloudflare.com
+DOMAIN,apple-relay.fastly-edge.com
