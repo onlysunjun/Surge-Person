@@ -1,5 +1,6 @@
 #!name=iPad Night Block
 #!desc=Block iPad-pro between 22:00 and 07:00 (controlled by another module)
+#!category=联网控制
 
 [Rule]
 DEVICE-NAME,iPad-pro,REJECT
