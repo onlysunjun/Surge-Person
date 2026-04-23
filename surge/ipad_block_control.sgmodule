@@ -3,4 +3,4 @@
 #!category=联网控制
 
 [Script]
-iPadNightBlockController = type=cron,cronexp="1 * * * *",script-path=https://raw.githubusercontent.com/onlysunjun/Surge-Person/refs/heads/main/surge/ipad_block_js.js,timeout=5
+iPadNightBlockController = type=cron,cronexp="* * * * *",script-path=https://raw.githubusercontent.com/onlysunjun/Surge-Person/refs/heads/main/surge/ipad_block_js.js,timeout=5
