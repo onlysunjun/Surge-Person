@@ -4,7 +4,7 @@ const TARGET_MODULE = "iPad Night Block";
 const hour = new Date().getHours();
 
 // 22:00-23:59 或 00:00-06:59 => 启用
-const shouldEnable = (hour >= 11 || hour < 24);
+const shouldEnable = (hour >= 22 || hour < 7);
 
 // 先读取当前模块状态
 $httpAPI("GET", "/v1/modules", null, (result) => {
