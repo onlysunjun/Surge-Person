@@ -1,0 +1,5 @@
+#!name=iPad Night Block Controller
+#!desc=Auto enable/disable iPad Night Block by time
+
+[Script]
+iPadNightBlockController = type=cron,cronexp="1 * * * *",script-path=iPadNightBlockController.js,timeout=5
