@@ -1,0 +1,11 @@
+#!name=GLaDOS 多账号自动签到
+#!desc=自动抓取并持久化保存多个 GLaDOS Cookie，每天定时签到
+#!system=ios
+
+[Script]
+GLaDOS Cookie 抓取 = type=http-request,pattern=^https:\/\/glados\.network\/api\/user\/(?:status|checkin)(?:\?.*)?$,script-path=glados_cookie_capture.js,requires-body=false,timeout=10
+
+GLaDOS 多账号签到 = type=cron,cronexp="0 0 11 * * *",script-path=glados_checkin.js,timeout=120,wake-system=1
+
+[MITM]
+hostname = %APPEND% glados.network
