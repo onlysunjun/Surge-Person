@@ -9,7 +9,10 @@
  * 5. 按 userId 合并重复 Cookie
  * 6. 自动删除确认失效的 Cookie（默认关闭）
  * 7. 账号与接口之间延迟、失败自动重试 3 次
- * 8. 汇总通知
+ * 8. 识别「Today's observation logged」为今日已签到，不再重复请求
+ *
+ * 注意：Surge [Script] 配置需指定 timeout=180，单次 HTTP 的 timeout 无法改变脚本整体超时。
+ * 9. 汇总通知
  */
 
 const BASE_URL = "https://glados.network";
@@ -242,7 +245,9 @@ function getLatestCheckinRecord(records) {
 }
 
 function isAlreadyChecked(message) {
-  return /already|checked|repeat|已签到|重复签到|今天已经/i.test(
+  // GLaDOS 在今日已经签到时，可能返回非 0 业务 code。
+  // 这属于已完成，不是异常，也不需要重新 POST。
+  return /today['’]?s observation logged|return tomorrow for more points|already\s+(?:been\s+)?(?:checked(?:\s+in)?|signed\s+in)|already\s+check(?:ed)?[ -]?in|已签到|重复签到|今天已经签到|今日已签到/i.test(
     String(message || "")
   );
 }
@@ -311,6 +316,7 @@ async function checkin(cookie) {
     "无签到信息"
   );
 
+  const alreadyChecked = isAlreadyChecked(message);
   const latestRecord = getLatestCheckinRecord(json.list);
 
   const points = formatNumber(
@@ -326,7 +332,8 @@ async function checkin(cookie) {
     : "";
 
   return {
-    success: json.code === 0 || isAlreadyChecked(message),
+    success: json.code === 0 || alreadyChecked,
+    alreadyChecked,
     invalidCookie: false,
     code: json.code,
     message,
@@ -426,18 +433,25 @@ function formatAccountResult(
   ];
 
   if (checkinResult) {
-    lines.push(`签到：${checkinResult.message}`);
+    if (checkinResult.alreadyChecked) {
+      lines.push("签到：今日已签到（无需重复签到）");
+    } else {
+      lines.push(`签到：${checkinResult.message}`);
+    }
 
     if (!checkinResult.invalidCookie) {
-      lines.push(`本次点数：${checkinResult.points}`);
+      // 今日已签到的返回值未必含有“本次新增积分”，避免把 0 误报为奖励。
+      if (!checkinResult.alreadyChecked) {
+        lines.push(`本次点数：${checkinResult.points}`);
+      }
 
       if (checkinResult.balance) {
         lines.push(`当前积分：${checkinResult.balance}`);
       }
 
-      lines.push(
-        `连续签到：${checkinResult.streak} 天`
-      );
+      if (!checkinResult.alreadyChecked) {
+        lines.push(`连续签到：${checkinResult.streak} 天`);
+      }
     }
   }
 
@@ -573,6 +587,11 @@ async function processAccount(account, index) {
   }
 
   if (checkinResult && checkinResult.success) {
+    updatedAccount.lastCheckinConfirmedAt = now;
+  }
+
+  // 已签到提示不代表本次新签到，保留历史真实签到记录。
+  if (checkinResult && checkinResult.success && !checkinResult.alreadyChecked) {
     updatedAccount.lastCheckin = {
       message: checkinResult.message,
       points: checkinResult.points,
