@@ -8,7 +8,8 @@
  * 4. 自动补全 email、userId
  * 5. 按 userId 合并重复 Cookie
  * 6. 自动删除确认失效的 Cookie（默认关闭）
- * 7. 汇总通知
+ * 7. 账号与接口之间延迟、失败自动重试 3 次
+ * 8. 汇总通知
  */
 
 const BASE_URL = "https://glados.network";
@@ -27,8 +28,11 @@ const STORE_KEY = "glados_accounts_v1";
  */
 const AUTO_REMOVE_INVALID_COOKIE = false;
 
-const REQUEST_TIMEOUT = 20;
-const ACCOUNT_DELAY_MS = 1200;
+const REQUEST_TIMEOUT = 20; // 单次 HTTP 请求超时（秒）
+const ACCOUNT_DELAY_MS = 3000; // 不同账号之间延迟 3 秒
+const REQUEST_DELAY_MS = 1500; // 同一账号：签到与状态查询间隔 1.5 秒
+const MAX_RETRIES = 3; // 失败后额外重试 3 次（最多执行 4 次）
+const RETRY_DELAY_MS = 2000; // 失败后按 2、4、6 秒递增等待
 
 function log(message) {
   console.log(`[GLaDOS] ${message}`);
@@ -38,6 +42,45 @@ function sleep(milliseconds) {
   return new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
   });
+}
+
+/**
+ * 遇到网络异常、非 2xx 响应、非法 JSON 或接口业务失败时重试。
+ * Cookie 已被明确判定失效时，直接返回，不重试。
+ * 签到返回“已签到”也视为成功，避免重试导致误报。
+ */
+async function runWithRetry(task, description) {
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      const delay = RETRY_DELAY_MS * attempt;
+      log(`${description}将在 ${delay / 1000} 秒后进行第 ${attempt} 次重试`);
+      await sleep(delay);
+    }
+
+    try {
+      const result = await task();
+      if (result && result.invalidCookie) {
+        log(`${description}检测到 Cookie 失效，停止重试`);
+        return result;
+      }
+
+      if (result && result.success === false) {
+        throw new Error(result.message || `${description}接口返回失败`);
+      }
+
+      if (attempt > 0) {
+        log(`${description}重试成功（第 ${attempt} 次重试）`);
+      }
+      return result;
+    } catch (error) {
+      log(`${description}第 ${attempt + 1} 次请求失败：${String(error.message || error)}`);
+      if (attempt >= MAX_RETRIES) {
+        throw new Error(
+          `${description}已重试 ${MAX_RETRIES} 次仍失败：${String(error.message || error)}`
+        );
+      }
+    }
+  }
 }
 
 function safeJsonParse(text) {
@@ -479,7 +522,10 @@ async function processAccount(account, index) {
   let invalidCookie = false;
 
   try {
-    checkinResult = await checkin(account.cookie);
+    checkinResult = await runWithRetry(
+      () => checkin(account.cookie),
+      `账号 ${index + 1} 签到`
+    );
 
     if (checkinResult.invalidCookie) {
       invalidCookie = true;
@@ -488,8 +534,14 @@ async function processAccount(account, index) {
     errors.push(`签到失败：${String(error.message || error)}`);
   }
 
+  // 无论签到成功还是失败，查询状态前都主动等待，避免连续请求。
+  await sleep(REQUEST_DELAY_MS);
+
   try {
-    statusResult = await getStatus(account.cookie);
+    statusResult = await runWithRetry(
+      () => getStatus(account.cookie),
+      `账号 ${index + 1} 状态查询`
+    );
 
     if (statusResult.invalidCookie) {
       invalidCookie = true;
