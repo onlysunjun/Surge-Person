@@ -5,7 +5,7 @@
 #!arguments-desc=两个网站使用同一青龙连接但分别保存账号；建议 dry_run:true 预览，确认后改 false。notify:true 每次会有抓取与结果两条通知。
 
 [Script]
-GLaDOS-Railgun-Instant-V6 = type=http-response, pattern=^https://(glados\.network|railgun\.info)/api/user/status(?:\?.*)?$, script-path=glados_railgun_capture_sync.js, argument="{{{ql_url}}}|||SITES|||{{{ql_token}}}|||SITES|||{{{ql_client_id}}}|||SITES|||{{{ql_client_secret}}}|||SITES|||{{{glados_env_name}}}|||SITES|||{{{railgun_env_name}}}|||SITES|||{{{dry_run}}}|||SITES|||{{{notify}}}", requires-body=true, max-size=65536, timeout=16, debug=true
+GLaDOS-Railgun-Instant-V6 = type=http-response, pattern=^https://(glados\.network|railgun\.info)/api/user/status(?:\?.*)?$, script-path=https://raw.githubusercontent.com/onlysunjun/Surge-Person/refs/heads/main/surge/signin/glados_railgun_capture_sync.js, argument="{{{ql_url}}}|||SITES|||{{{ql_token}}}|||SITES|||{{{ql_client_id}}}|||SITES|||{{{ql_client_secret}}}|||SITES|||{{{glados_env_name}}}|||SITES|||{{{railgun_env_name}}}|||SITES|||{{{dry_run}}}|||SITES|||{{{notify}}}", requires-body=true, max-size=65536, timeout=16, debug=true
 
 [Header Rewrite]
 http-request ^https://glados\.network/api/user/status(?:\?.*)?$ header-del Accept-Encoding
